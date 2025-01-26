@@ -1,3 +1,4 @@
+import os
 import logging
 from flask import Flask, request, jsonify, render_template
 import instaloader
@@ -52,4 +53,5 @@ def fetch_video():
         return jsonify({"error": "An error occurred. Please try again."})
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get("PORT", 5000))  # Default to 5000 if not provided by Render
+    app.run(debug=True, host='0.0.0.0', port=port)
