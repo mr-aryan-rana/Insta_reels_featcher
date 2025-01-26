@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Reels Downloader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .container {
+            margin-top: 50px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        input {
+            width: 80%;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        video {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Instagram Reels Downloader</h1>
+        <input type="text" id="insta-url" placeholder="Enter Instagram Reels URL" />
+        <button onclick="fetchVideo()">Get Video</button>
+
+        <div id="video-container" style="display: none;">
+            <h3>Video Preview:</h3>
+            <video id="video" controls>
+                <source id="video-source" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <br>
+            <button id="download-btn">Download Video</button>
+        </div>
+
+        <p id="error-message" style="color: red;"></p>
+    </div>
+
+    <script>
+        async function fetchVideo() {
+            const url = document.getElementById("insta-url").value;
+            const errorMessage = document.getElementById("error-message");
+
+            if (!url) {
+                errorMessage.textContent = "Please enter a valid Instagram URL.";
+                return;
+            }
+
+            // Clear previous error message
+            errorMessage.textContent = "";
+
+            try {
+                // Send POST request to Flask backend (ensure it's running on 127.0.0.1:5000)
+                const response = await fetch('http://127.0.0.1:5000/fetch-video', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `url=${encodeURIComponent(url)}`
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    errorMessage.textContent = data.error;
+                    return;
+                }
+
+                // If video URL found, show the video
+                const videoElement = document.getElementById("video");
+                const videoSource = document.getElementById("video-source");
+                
+                // Set the video source
+                videoSource.src = data.video_url;
+                videoElement.load();  // Reload the video with the new source
+                document.getElementById("video-container").style.display = "block";
+
+                // Set up the download button
+                const downloadButton = document.getElementById("download-btn");
+                downloadButton.onclick = () => {
+                    window.location.href = data.video_url;
+                };
+
+            } catch (error) {
+                console.error("Error fetching video:", error);
+                errorMessage.textContent = "An error occurred. Please try again.";
+            }
+        }
+    </script>
+</body>
+</html>
